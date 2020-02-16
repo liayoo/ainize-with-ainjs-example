@@ -19,5 +19,17 @@ docker build -t ${YOUR_DOCKER_HUB_ID}/ainize-with-ainjs .
 docker run -p 80:80 -d ${YOUR_DOCKER_HUB_ID}/ainize-with-ainjs
 ```
 The server will be available at: http://localhost:80
-- `/` Will return 'hello world'
-- `/set_value?value={a-value-you-want-to-record}` Will send a set_value transaction to AIN Blockchain and return a response.
+- GET `/` Will return 'hello world'
+- GET `/set_value?value={a-value-you-want-to-record}` Will send a set_value transaction to AIN Blockchain and return a response.
+- POST `/message` with a json body of { "question": "<some-question>" } Will ask a chatbot the question and write the answer it receives to AIN Blockchain.
+
+## Docker push
+Upload the docker image to Docker hub.
+```
+docker push ${YOUR_DOCKER_HUB_ID}/ainize-with-ainjs
+```
+
+## Ainize
+1. Go to ainize.ai
+2. Enter this github repo's url and click 'Ainize it'
+3. Enter ${YOUR_DOCKER_HUB_ID}/ainize-with-ainjs (a.k.a. your docker image id) and click 'Connect and deploy'

@@ -1,15 +1,16 @@
 {
-  "name": "ainize-docker-nodejs",
+  "name": "ainize-with-ainjs",
   "version": "1.0.0",
-  "description": "tutorial for dockerize",
+  "description": "A tutorial for ainizing a node.js server that uses ain-js.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
-  "author": "minsu",
+  "author": "lia",
   "license": "ISC",
   "dependencies": {
     "@ainblockchain/ain-js": "^1.0.1",
+    "axios": "^0.19.2",
     "express": "^4.17.1"
   }
 }
