@@ -15,10 +15,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded( {extended : false } ));
 
-app.get('/', (req, res) => {
-  res.json('Hello Wwwwwwwwwwwwwwwwwwworld');
-});
-
 app.get('/set_value', async (req, res) => {
   const value = req.query.value;
   const ref = ain.db.ref(TEST_REF).push();
