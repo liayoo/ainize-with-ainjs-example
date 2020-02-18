@@ -11,6 +11,8 @@ const botIdDemo = 'demo';
 const BONG_BOT_NAME = 'bonghive';
 const AIN_BOT_NAME = 'ai_network';
 const PAPAYA_BOT_NAME = 'papaya';
+const SHRUG_BOT_NAME = 'shrug_bot';
+const DUNNO = '¯\\_(ツ)_/¯';
 
 const ain = new Ain('http://node.ainetwork.ai:8080');
 const addr = ain.wallet.add(process.env.PRIVATE_KEY);
@@ -24,8 +26,6 @@ app.use(express.urlencoded( {extended : false } ));
 app.get('/set_value', async (req, res) => {
   const value = req.query.value;
   const ref = ain.db.ref(TEST_REF).push();
-  // console.log("ref:", ref, "value:", value);
-  // res.json({ value, ref: ref.path });
   const result = await ref.setValue({ value });
   res.json(result);
 });
@@ -38,42 +38,56 @@ app.post('/', async (req, res) => {
   if (!key) {
     res.json({ error: `Invalid ref value received: ${ref}` });
   } else {
-    // console.log("i got a message:", question);
-    let promises = [];
-    promises.push(axios.get(qnaEndpoint, {
-      params: {
-        bot_id: botIdParasite,
-        question: question
-      }
-    }))
-    promises.push(axios.get(qnaEndpoint, {
-      params: {
-        bot_id: botIdDemo,
-        question: question
-      }
-    }))
-    promises.push(axios.get(papayaEndpoint, {
-      params: {
-        sentence: question,
-        previous_session_id: 1
-      }
-    }))
-    await Promise.all(promises)
-    .then((responseList) => {
-      const bongRes = responseList[0].data;
-      const ainRes = responseList[1].data;
-      const papayaRes = responseList[2].data;
-      if (bongRes.okay === 'true') {
-        sendResponse(BONG_BOT_NAME, key, bongRes.answer, res);
-      } else if (ainRes.okay === 'true') {
-        sendResponse(AIN_BOT_NAME, key, ainRes.answer, res);
+    try {
+      const snapshot = await ain.db.ref(ANSWER_REF).getValue();
+      if (get(snapshot, `${BONG_BOT_NAME}.response.${key}`) || get(snapshot, `${AIN_BOT_NAME}.response.${key}`) ||
+      get(snapshot, `${PAPAYA_BOT_NAME}.response.${key}`) || get(snapshot, `${SHRUG_BOT_NAME}.response.${key}`)) {
+        // Prevent sending multiple requests from multiple triggering events.
+        res.json({ success: false, message: 'The request has been already processed' });
       } else {
-        sendResponse(PAPAYA_BOT_NAME, key, papayaRes.answer, res);
+        let promises = [];
+        promises.push(axios.get(qnaEndpoint, {
+          params: {
+            bot_id: botIdParasite,
+            question: question
+          }
+        })
+        .catch(() => { return {data: {okay: false}} }))
+        promises.push(axios.get(qnaEndpoint, {
+          params: {
+            bot_id: botIdDemo,
+            question: question
+          }
+        })
+        .catch(() => { return {data: {okay: false}} }))
+        promises.push(axios.get(papayaEndpoint, {
+          params: {
+            sentence: question,
+            previous_session_id: 1
+          }
+        })
+        .catch(() => { return {data: {okay: false}} }))
+        await Promise.all(promises)
+        .then((responseList) => {
+          const bongRes = responseList[0].data;
+          const ainRes = responseList[1].data;
+          const papayaRes = responseList[2].data;
+          console.log('bonghive:', bongRes, '\nai_network:', ainRes, '\npapaya:', papayaRes);
+          if (bongRes.okay === true) {
+            sendResponse(BONG_BOT_NAME, key, bongRes.answer, res);
+          } else if (ainRes.okay === true) {
+            sendResponse(AIN_BOT_NAME, key, ainRes.answer, res);
+          } else if (papayaRes.okay === true) {
+            sendResponse(PAPAYA_BOT_NAME, key, papayaRes.answer, res);
+          } else {
+            sendResponse(SHRUG_BOT_NAME, key, DUNNO, res);
+          }
+        })
       }
-    })
-    .catch((error) => {
-      res.json(error);
-    })
+    } catch(error) {
+      console.log("Error:", error)
+      res.json({ error });
+    }
   }
 });
 
