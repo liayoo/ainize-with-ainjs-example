@@ -23,6 +23,36 @@ paths:
           description: Bad Request Error
         default:
           description: Unexpected Error
+    post:
+      summary: Asks a chatbot the incoming question, and writes the chatbot's answer to AIN Blockchain.
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      requestBody:
+        description: "A question to ask"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction:
+                  type: object
+                  properties:
+                    value:
+                      $ref: '#/components/schemas/AnyValue'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: boolean
+                  txHash:
+                    type: string
   /set_value:
     get:
       summary: Creates and sends a transaction to AIN Blockchain, which sets a value at a certain path (/afan/ainize_test/${random_key}).
@@ -42,31 +72,14 @@ paths:
                     type: boolean
                   txHash:
                     type: string
-  /message:
-    post:
-      summary: Asks a chatbot the incoming question, and writes the chatbot's answer to AIN Blockchain.
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      requestBody:
-        description: "A question to ask"
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                question:
-                  type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: boolean
-                  txHash:
-                    type: string
+components:
+  schemas:
+    AnyValue:
+      anyOf:
+        - type: string
+        - type: number
+        - type: integer
+        - type: boolean
+        - type: array
+          items: {}
+        - type: object
