@@ -28,7 +28,8 @@ app.get('/set_value', async (req, res) => {
 });
 
 app.post('/message', async (req, res) => {
-  const question = req.body.question;
+  const tx = req.body.transaction;
+  const question = tx.value;
   // console.log("i got a message:", question);
   axios.get(chatbotEndpoint, {
     params: {
