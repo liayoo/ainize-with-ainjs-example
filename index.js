@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const Ain = require('@ainblockchain/ain-js').default;
+const get = require('lodash/get');
 const PORT = 80;
 const ANSWER_REF = '/apps/chatbots/papaya/response';
 const chatbotEndpoint = 'https://chatlearner.minho-comcom-ai.endpoint.ainize.ai/chatbot';
@@ -27,9 +28,9 @@ app.get('/set_value', async (req, res) => {
   res.json(result);
 });
 
-app.post('/message', async (req, res) => {
+app.post('/', async (req, res) => {
   const tx = req.body.transaction;
-  const question = tx.value;
+  const question = get(tx, 'operation.value');
   // console.log("i got a message:", question);
   axios.get(chatbotEndpoint, {
     params: {
